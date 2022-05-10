@@ -45,7 +45,7 @@ const PageBanner = (props) => {
       padding: "17px 33px",
       color: "white",
       borderColor: "#2a2a2a",
-      backgroundColor: "#444",
+      backgroundColor: "black",
       textDecoration: "none",
       fontSize: 16,
       "&:hover": {},
@@ -63,7 +63,7 @@ const PageBanner = (props) => {
             <h2 className={classes.bannerHeading}>{title}</h2>
             {subTitle && <p className={classes.bannerSubHeading}>{subTitle}</p>}
             <br />
-            <Link to="/shop" className={classes.button}>
+            <Link to="/shop" className={"discover_btn " + classes.button}>
               Discover More
             </Link>
           </Grid>

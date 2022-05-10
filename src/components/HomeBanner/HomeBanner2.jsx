@@ -60,10 +60,6 @@ const PageBanner = (props) => {
       color: "white",
       textDecoration: "none",
       fontSize: "19px",
-      "&:hover": {
-        backgroundColor: "white",
-        color: "black",
-      },
     },
   }));
 

@@ -6,8 +6,18 @@ import {
   makeStyles,
   Typography,
 } from "@material-ui/core";
-import React from "react";
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
 import { Link } from "react-router-dom";
+import {
+  setIsAuthenticate,
+  setNotificationMessage,
+  setUserData,
+} from "../../../lib/actions";
+import { setAccessToken, toast } from "../../../lib/helper";
+import { loginCustomer } from "../../../utils/userUtils";
+import { useHistory } from "react-router-dom";
 
 const useStyle = makeStyles((theme) => ({
   loginSec: {
@@ -97,8 +107,60 @@ const useStyle = makeStyles((theme) => ({
   },
 }));
 
-const Login = () => {
+const Login = ({
+  isAuthenticate,
+  setIsAuthenticateConnect,
+  setUserDataConnect,
+  setNotificationMessageConnect,
+}) => {
   const classes = useStyle();
+  const history = useHistory();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isShowPassword, setIsShowPassword] = useState(false);
+
+  const showPasswordHandler = () => setIsShowPassword(!isShowPassword);
+  const changeHandler = (setState) => (e) => setState(e.target.value);
+
+  const isFieldsValid = () => {
+    if (!email || !password) {
+      toast.error(setNotificationMessageConnect, "Fields are missing");
+      return false;
+    } else {
+      if (!email.includes("@")) {
+        toast.error(setNotificationMessageConnect, "Email is not valid");
+        return false;
+      }
+      return true;
+    }
+  };
+
+  const _submit = async (e) => {
+    e.preventDefault();
+
+    if (!isFieldsValid()) {
+      const elem = document.getElementById("email");
+      elem.focus();
+      return;
+    }
+
+    try {
+      const resp = await loginCustomer({ email, password });
+      toast.success(
+        setNotificationMessageConnect,
+        resp?.data?.message || "---"
+      );
+      setAccessToken(resp.data.token);
+      setIsAuthenticateConnect(true);
+      setUserDataConnect(resp.data.data);
+      history.push("/user/dashboard");
+    } catch (error) {
+      toast.error(
+        setNotificationMessageConnect,
+        error?.response?.data?.message || error
+      );
+    }
+  };
 
   return (
     <section className={classes.loginSec}>
@@ -114,13 +176,37 @@ const Login = () => {
           </Link>
         </ListItem>
       </List>
-      <form className={classes.form}>
+      <form onSubmit={_submit} className={classes.form}>
         <label for="email">USERNAME OR EMAIL ADDRESS *</label>
-        <input type="email" id="email" className={classes.input} />
+        <input
+          type="email"
+          id="email"
+          className={classes.input}
+          onChange={changeHandler(setEmail)}
+        />
         <label for="password">Password *</label>
-        <input type="password" id="password" className={classes.input} />
-        <button className={classes.button2}> Login </button>
+        <input
+          type={isShowPassword ? "text" : "password"}
+          id="password"
+          className={classes.input}
+          onChange={changeHandler(setPassword)}
+        />
+        <button type="submit" className={classes.button2}>
+          Login
+        </button>
       </form>
+
+      <div>
+        <input
+          type="checkbox"
+          id="password"
+          onChange={showPasswordHandler}
+        ></input>
+        <label for="password" className={classes.forgetPassword}>
+          Show Password
+        </label>
+      </div>
+
       <div className={classes.remmember}>
         <div>
           <input type="checkbox" id="remember"></input>
@@ -136,4 +222,21 @@ const Login = () => {
   );
 };
 
-export default Login;
+Login.propTypes = {
+  isAuthenticate: PropTypes.bool.isRequired,
+  setIsAuthenticateConnect: PropTypes.func.isRequired,
+  setUserDataConnect: PropTypes.func.isRequired,
+  setNotificationMessageConnect: PropTypes.func.isRequired,
+};
+
+const mapStateToProps = (state) => ({
+  isAuthenticate: state.app.isAuthenticate,
+});
+
+const mapDispatchToProps = {
+  setIsAuthenticateConnect: setIsAuthenticate,
+  setUserDataConnect: setUserData,
+  setNotificationMessageConnect: setNotificationMessage,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Login);

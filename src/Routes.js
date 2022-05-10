@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from  "prop-types"
 import { BrowserRouter, Switch, Redirect } from "react-router-dom";
 import {
   HomeScreen,
@@ -18,8 +19,10 @@ import {
 } from "./views";
 import { RouteWithLayout } from "./components";
 import { MainLayout, MinimalLayout } from "./layout";
+import Dashboard from "./components/UserDashboard/Dashboard";
+import { connect } from "react-redux";
 
-function Routes() {
+function Routes({ isAuthenticate }) {
   return (
     <BrowserRouter basename="/">
       <Switch>
@@ -95,6 +98,14 @@ function Routes() {
           component={CheckoutScreen}
           layout={MainLayout}
         />
+        <RouteWithLayout
+          path="/user/dashboard"
+          exact
+          component={Dashboard}
+          layout={MainLayout}
+          requireAuthentication={true}
+          authenticated={localStorage.getItem("token") ? true : false}
+        />
 
         {/* <RouteWithLayout
           path="/dashboard/:role"
@@ -111,4 +122,14 @@ function Routes() {
   );
 }
 
-export default Routes;
+Routes.propTypes = {
+  isAuthenticate: PropTypes.bool.isRequired,
+};
+
+const mapStateToProps = (state) => ({
+  isAuthenticate: state.app.isAuthenticate,
+});
+
+const mapDispatchToProps = {};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Routes);

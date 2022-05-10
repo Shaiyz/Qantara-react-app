@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import PropTypes from "prop-types";
 import {
   Box,
   Grid,
@@ -8,12 +9,21 @@ import {
   Typography,
 } from "@material-ui/core";
 import { Link } from "react-router-dom";
+import { useHistory } from "react-router-dom";
+import { connect, useSelector } from "react-redux";
+import {
+  setIsAuthenticate,
+  setNotificationMessage,
+  setUserData,
+} from "../../../lib/actions";
+import { createCustomer } from "../../../utils/userUtils";
+import { toast } from "../../../lib/helper";
 
 const useStyle = makeStyles((theme) => ({
   loginSec: {
     padding: "70px 0",
     width: "100%",
-    height: "80vh",
+    height: "100vh",
     backgroundColor: "white",
     display: "flex",
     flexDirection: "column",
@@ -98,8 +108,56 @@ const useStyle = makeStyles((theme) => ({
   },
 }));
 
-const Register = () => {
+const Register = ({
+  isAuthenticate,
+  setIsAuthenticateConnect,
+  setUserDataConnect,
+  setNotificationMessageConnect,
+}) => {
   const classes = useStyle();
+  const history = useHistory();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isShowPassword, setIsShowPassword] = useState(false);
+
+  const showPasswordHandler = () => setIsShowPassword(!isShowPassword);
+
+  const isFieldsValid = () => {
+    if (!email || !password) {
+      toast.error(setNotificationMessageConnect, "Fields are missing");
+      return false;
+    } else {
+      if (!email.includes("@")) {
+        toast.error(setNotificationMessageConnect, "Email is not valid");
+        return false;
+      }
+      return true;
+    }
+  };
+
+  const _submit = async () => {
+    if (!isFieldsValid()) {
+      const elem = document.getElementById("email");
+      elem.focus();
+      return;
+    }
+
+    try {
+      const createCustomerObj = {
+        email,
+        password,
+      };
+
+      const resp = await createCustomer(createCustomerObj);
+      toast.success(setNotificationMessageConnect, "Successfully created");
+      history.push("login");
+    } catch (error) {
+      toast.error(
+        setNotificationMessageConnect,
+        error?.response?.data?.message || error
+      );
+    }
+  };
 
   return (
     <section className={classes.loginSec}>
@@ -117,8 +175,36 @@ const Register = () => {
       </List>
       <form className={classes.form}>
         <label for="email">EMAIL ADDRESS *</label>
-        <input type="email" id="email" className={classes.input} />
+        <input
+          type="email"
+          id="email"
+          onChange={(e) => setEmail(e.target.value)}
+          className={classes.input}
+        />
+        <label for="password">PASSWORD*</label>
+        <input
+          type={isShowPassword ? "text" : "password"}
+          name="password"
+          id="password"
+          className={classes.input}
+          onChange={(e) => setPassword(e.target.value)}
+          autoComplete
+        />
       </form>
+
+      <div className={classes.remmember}>
+        <div>
+          <input
+            type="checkbox"
+            id="showPassword"
+            onChange={showPasswordHandler}
+          />
+          <label for="remember" className={classes.forgetPassword}>
+            SHOW PASSWORD
+          </label>
+        </div>
+      </div>
+
       <div className={classes.remmember}>
         <div>
           <input type="checkbox" id="remember"></input>
@@ -133,10 +219,29 @@ const Register = () => {
           described in our privacy policy.
         </Typography>
         <br></br>
-        <button className={classes.button2}>Register</button>
+        <button onClick={_submit} className={classes.button2}>
+          Register
+        </button>
       </div>
     </section>
   );
 };
 
-export default Register;
+Register.propTypes = {
+  isAuthenticate: PropTypes.bool.isRequired,
+  setIsAuthenticateConnect: PropTypes.func.isRequired,
+  setUserDataConnect: PropTypes.func.isRequired,
+  setNotificationMessageConnect: PropTypes.func.isRequired,
+};
+
+const mapStateToProps = (state) => ({
+  isAuthenticate: state.app.isAuthenticate,
+});
+
+const mapDispatchToProps = {
+  setIsAuthenticateConnect: setIsAuthenticate,
+  setUserDataConnect: setUserData,
+  setNotificationMessageConnect: setNotificationMessage,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Register);

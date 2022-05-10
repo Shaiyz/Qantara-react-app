@@ -1,0 +1,21 @@
+.overlay {
+    position: absolute;
+    inset: 0;
+    top: auto;
+    width: 100%;
+    opacity: 1;
+    background-color: #feb04b;
+    z-index: 9999999;
+    transition: .5s ease-in-out;
+}
+
+.text {
+    color: white;
+    font-size: 1rem;
+    position: absolute;
+    top: 50%;
+    left: 10%;
+    -webkit-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}

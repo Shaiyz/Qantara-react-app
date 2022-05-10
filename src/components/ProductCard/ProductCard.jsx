@@ -44,7 +44,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function ProductCard({ product }) {
+function ProductCard({ product, isShowAddToCartBtn }) {
   const classes = useStyles();
   return (
     <div className={classes.root}>
@@ -71,9 +71,13 @@ function ProductCard({ product }) {
         </Link>
         <FavoriteBorderIcon className={classes.SmallIcon} />
       </Box>
-      <Typography variant="subtitle1" className={classes.productPrice}>
-        {product.product_price.toFixed(2)}
-      </Typography>
+      {!isShowAddToCartBtn ? (
+        <Typography variant="subtitle1" className={classes.productPrice}>
+          {product.product_price.toFixed(2)}
+        </Typography>
+      ) : (
+        <div className="add_to_cart_btn" >Add to cart</div>
+      )}
     </div>
   );
 }

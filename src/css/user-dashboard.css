@@ -1,0 +1,76 @@
+.dashboard {
+    /* height: 50vh; */
+}
+
+.user_dashboard {
+    display: flex;
+    margin: 0 5rem;
+}
+
+.boxCard {
+    border: 1px solid rgb(183, 182, 182);
+    width: 20%;
+    text-align: center;
+    padding: 1.5rem 0 1rem;
+    margin: 0;
+    transition: 200ms ease-in-out;
+    cursor: pointer;
+    opacity: 0.4;
+}
+
+.boxHeading {
+    margin: 1rem 0 0;
+    font-size: 1rem;
+}
+
+.orderIcon {
+    width: 35px;
+    height: 40px;
+}
+
+.boxCard:hover {
+    border: 1px solid rgb(183, 182, 182, 0.4);
+    opacity: 1;
+}
+
+.selectedBox {
+    border: 1px solid rgb(183, 182, 182, 0.4);
+    opacity: 1;
+}
+
+.address_title{
+    color: rgb(84, 82, 82);
+}
+
+.address_btn {
+    background-color: transparent;
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    color: rgb(61, 60, 60);
+    cursor: pointer;
+    padding: 0;
+}
+
+.address_btn:hover {
+   color: black;
+}
+
+.address_note {
+    margin: 0 !important;
+}
+
+@media only screen and (max-width: 700px) {
+
+    .user_dashboard {
+        flex-wrap: wrap;
+    }
+
+    .boxCard {
+        width: 49%;
+    }
+
+    .boxCard:last-child {
+        width: 98.5%;
+    }
+}

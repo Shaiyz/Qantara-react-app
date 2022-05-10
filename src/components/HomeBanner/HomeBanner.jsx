@@ -65,7 +65,7 @@ const PageBanner = (props) => {
         <h2 className={classes.bannerHeading}>{title}</h2>
         {subTitle && <p className={classes.bannerSubHeading}>{subTitle}</p>}
         <br />
-        <Link to="/shop" className={classes.button}>
+        <Link to="/shop" className={"show_now_btn " + classes.button}>
           Shop now
         </Link>
       </div>

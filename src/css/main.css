@@ -1,0 +1,45 @@
+.add_to_cart_btn {
+    text-align: start;
+    margin: 0rem 0 0;
+    animation: fade_In_1 500ms ease-in-out;
+    border-bottom: 2px solid black;
+    width: fit-content;
+    position: absolute;
+}
+
+
+.MuiTypography-subtitle1 {
+    position: absolute;
+    animation: fade_In_2 500ms ease-in-out;
+}
+
+@keyframes fade_In_1 {
+    0% {
+        transform: translateY(5px);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
+
+@keyframes fade_In_2 {
+    0% {
+        transform: translateY(-5px);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
+
+.discover_btn {
+    background: #2a2a2a;
+    /* fallback for old browsers */
+    background: -webkit-linear-gradient(to bottom, #434343, #1e1e1e);
+    /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(to bottom, #434343, #1e1e1e);
+    /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    margin: 0 !important;
+    padding: 14px 20px !important;
+}

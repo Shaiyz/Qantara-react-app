@@ -1,0 +1,71 @@
+.navLinkHover {
+    position: relative;
+    z-index: 1;
+}
+
+.navLinkHover::before {
+    z-index: -1;
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-bottom: 2px solid black;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 200ms ease-in-out;
+}
+
+.navLinkHover:hover::before,
+.navLinkHover:focus::before {
+    transform: scaleX(1);
+}
+
+.menuItemHoverParent {
+    padding: 2rem 0 !important;
+}
+
+.menuItemHover {
+    margin: 0.5rem 0 0.5rem 2.5rem !important;
+    padding: 0 !important;
+    width: fit-content !important;
+    cursor: pointer !important;
+}
+
+.menuItemHover::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-bottom: 2px solid black;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 250ms ease-in-out;
+}
+
+.menuItemHover:hover::before {
+    transform: scaleX(1);
+}
+
+.show_now_btn {
+    transition: 150ms ease-in-out !important;
+}
+
+.MuiMenuItem-root {
+    margin: 0.5rem 0 0.5rem 2.5rem !important;
+    padding: 0 !important;
+    width: fit-content !important;
+    cursor: pointer !important;
+}
+
+.MuiMenuItem-root::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-bottom: 2px solid black;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 250ms ease-in-out;
+}
+
+
+.MuiMenuItem-root:hover::before {
+    transform: scaleX(1);
+}

@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import PropTypes from "prop-types";
 import {
   AppBar,
   makeStyles,
@@ -22,6 +23,7 @@ import { CartSideBar } from "../../../components";
 import Badge from "@material-ui/core/Badge";
 import React from "react";
 import { useHistory } from "react-router-dom";
+import { connect } from "react-redux";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -141,8 +143,8 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: "center",
   },
   navItem: {
-    margin: "0 10px",
-    padding: "0 2px",
+    // margin: "0 10px",
+    padding: "0 5px",
     color: "white",
     fontSize: "12px",
     fontWeight: "600",
@@ -169,6 +171,7 @@ const useStyles = makeStyles((theme) => ({
       width: "170px",
       marginTop: "10px",
       boxShadow: "none",
+      boxShadow: "1px 1px 5px 1px #ece9e9",
       "&:hover": {
         backgroundColor: "white",
       },
@@ -177,19 +180,16 @@ const useStyles = makeStyles((theme) => ({
   menuItem: {
     justifyContent: "flex-start",
     backgroundColor: "#FFF !important",
-
-    "&:hover": {
-      textDecoration: "2px underline",
-    },
   },
   arrow: {
     border: "solid white",
     borderWidth: "0 1.5px 1.5px 0",
     display: "inline-block",
     padding: "1.5px",
-    marginBottom: "3px",
+    marginBottom: "4px",
     transform: "rotate(45deg)",
     webkitTransform: "rotate(45deg)",
+    marginRight: "1.2rem",
   },
   customBadge: {
     backgroundColor: "#cacaca",
@@ -200,7 +200,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Navbar = ({ toggleMobileNav }) => {
+const Navbar = ({ toggleMobileNav, isAuthenticate }) => {
   let links = linksConfig;
   const classes = useStyles();
   const history = useHistory();
@@ -226,6 +226,11 @@ const Navbar = ({ toggleMobileNav }) => {
     history.push(`/product-category/category/${sub}`);
     setAnchorEl(null);
   }
+
+  function handleCloseMenu() {
+    setAnchorEl(null);
+  }
+
   const handleScroll = (e) => {
     if (e.path[1].scrollY > 45) {
       setScroll(true);
@@ -258,7 +263,7 @@ const Navbar = ({ toggleMobileNav }) => {
               {links.map((item, i) => (
                 <>
                   <NavLink
-                    className={classes.navItem}
+                    className={"navLinkHover " + classes.navItem}
                     to={item.path}
                     activeClassName={classes.activeNav}
                     key={i}
@@ -280,8 +285,10 @@ const Navbar = ({ toggleMobileNav }) => {
                 className={classes.menu}
                 transformOrigin={{ vertical: "top", horizontal: "center" }}
                 open={Boolean(anchorEl)}
-                onClose={handleClose}
-                MenuListProps={{ onMouseLeave: handleClose }}
+                onClose={handleCloseMenu}
+                MenuListProps={{
+                  onMouseLeave: handleCloseMenu,
+                }}
               >
                 {subCategory.map((subCategory, index) => (
                   <MenuItem
@@ -299,7 +306,13 @@ const Navbar = ({ toggleMobileNav }) => {
           </Hidden>
         </Toolbar>
         <Box className={classes.iconContainer}>
-          <PersonOutline className={classes.icon} />
+          <PersonOutline
+            className={classes.icon}
+            onClick={() => {
+              if (isAuthenticate) history.push("/user/dashboard");
+              else history.push("/login");
+            }}
+          />
           <SearchOutlined className={classes.icon} />
           <LocalMallOutlined
             className={classes.icon}
@@ -316,4 +329,14 @@ const Navbar = ({ toggleMobileNav }) => {
   );
 };
 
-export default Navbar;
+Navbar.propTypes = {
+  isAuthenticate: PropTypes.bool.isRequired,
+};
+
+const mapStateToProps = (state) => ({
+  isAuthenticate: state.app.isAuthenticate,
+});
+
+const mapDispatchToProps = {};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Navbar);

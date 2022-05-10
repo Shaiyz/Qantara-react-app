@@ -30,6 +30,24 @@ const menu = [
     path: "/category",
     isExact: true,
   },
+  {
+    title: "Category-1",
+    sub: ["sub1", "sub2", "sub3", "sub4", "sub5"],
+    path: "/category",
+    isExact: true,
+  },
+  {
+    title: "Category-2",
+    sub: ["sub1", "sub2", "sub3", "sub4", "sub5"],
+    path: "/category",
+    isExact: true,
+  },
+  {
+    title: "Category-3",
+    sub: ["sub1", "sub2", "sub3", "sub4", "sub5"],
+    path: "/category",
+    isExact: true,
+  },
 ];
 
 export default menu;

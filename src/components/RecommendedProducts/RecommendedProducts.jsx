@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Container,
@@ -21,6 +21,21 @@ const RecommendedProducts = ({ size, products }) => {
   }));
   let errors = null;
   const classes = useStyles();
+  const [isShoAddCartBtn, setIsShoAddCartBtn] = useState(
+    [...Array(products?.length)].fill(false)
+  );
+
+  const onMouseOverHandler = (index) => {
+    const [...rest] = isShoAddCartBtn;
+    rest[index] = true;
+    setIsShoAddCartBtn(rest);
+  };
+  const onMouseLeaveHandler = (index) => {
+    const [...rest] = isShoAddCartBtn;
+    rest[index] = false;
+    setIsShoAddCartBtn(rest);
+  };
+
   return (
     <>
       <Container style={{ marginTop: "60px", marginBottom: "60px" }}>
@@ -29,8 +44,24 @@ const RecommendedProducts = ({ size, products }) => {
         {products?.length > 0 ? (
           <Grid container spacing={2} style={{ justifyContent: "center" }}>
             {products.map((item, index) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-                <ProductCard product={item} />
+              <Grid
+                onMouseOver={() => {
+                  onMouseOverHandler(index);
+                }}
+                onMouseLeave={() => {
+                  onMouseLeaveHandler(index);
+                }}
+                item
+                xs={12}
+                sm={6}
+                md={4}
+                lg={3}
+                key={index}
+              >
+                <ProductCard
+                  product={item}
+                  isShowAddToCartBtn={isShoAddCartBtn[index]}
+                />
               </Grid>
             ))}
           </Grid>

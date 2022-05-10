@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import PropTypes from "prop-types";
 import {
   AppBar,
   makeStyles,
@@ -21,6 +22,7 @@ import { useState } from "react";
 import { CartSideBar } from "../../../components";
 import Badge from "@material-ui/core/Badge";
 import { useHistory } from "react-router-dom";
+import { connect } from "react-redux";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -68,17 +70,16 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: "center",
   },
   navItem: {
-    margin: "0 10px",
-    padding: "0 2px",
+    padding: "0 5px",
     color: "black",
     fontSize: "12px",
     fontWeight: "600",
     letterSpacing: "1px",
     textDecoration: "none",
-    "&:hover": {
-      height: "2px",
-      textDecoration: "2px underline",
-    },
+    // "&:hover": {
+    //   height: "2px",
+    //   textDecoration: "2px underline",
+    // },
   },
   menuBtn: {
     color: "black",
@@ -94,8 +95,9 @@ const useStyles = makeStyles((theme) => ({
     "& .MuiPaper-root": {
       borderRadius: "0px",
       width: "170px",
-      marginTop: "15px",
-      boxShadow: "none",
+      marginTop: "10px",
+      boxShadow: "1px 1px 5px 1px #ece9e9",
+      border: "1px solid #ece9e9",
       "&:hover": {
         backgroundColor: "white",
       },
@@ -104,18 +106,20 @@ const useStyles = makeStyles((theme) => ({
   menuItem: {
     justifyContent: "flex-start",
     backgroundColor: "#FFF !important",
-    "&:hover": {
-      textDecoration: "2px underline",
-    },
+    // "&:hover": {
+    //   textDecoration: "2px underline",
+    // },
   },
   arrow: {
     border: "solid black",
     borderWidth: "0 1.5px 1.5px 0",
     display: "inline-block",
     padding: "1.5px",
-    marginBottom: "3px",
+    marginBottom: "4px",
     transform: "rotate(45deg)",
     webkitTransform: "rotate(45deg)",
+    marginRight: "1.2rem",
+    color: "#2f2e2e",
   },
   customBadge: {
     backgroundColor: "#cacaca",
@@ -126,7 +130,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Navbar = ({ toggleMobileNav }) => {
+const Navbar = ({ toggleMobileNav, isAuthenticate }) => {
   let links = linksConfig;
   const classes = useStyles();
   const history = useHistory();
@@ -135,18 +139,32 @@ const Navbar = ({ toggleMobileNav }) => {
   const [subCategory, setSubCategory] = useState([]);
 
   function handleClick(event, item) {
-    const selected = links.filter((i) => i.title == item.title);
-    setSubCategory(selected[0].sub);
-    if (anchorEl !== event.currentTarget) {
-      setAnchorEl(event.currentTarget);
+    if (item === "view more") {
+      const restNavs = links.filter((e, i) => i > 4);
+
+      setSubCategory(restNavs.map((e) => e.title));
+      if (anchorEl !== event.currentTarget) {
+        setAnchorEl(event.currentTarget);
+      }
+    } else {
+      const selected = links.filter((i) => i.title == item.title);
+      setSubCategory(selected[0].sub);
+      if (anchorEl !== event.currentTarget) {
+        setAnchorEl(event.currentTarget);
+      }
     }
   }
+
   const toggleCartNav = () => {
     setCartOpenSidebar((prev) => !prev);
   };
 
   function handleClose(sub) {
     history.push(`/product-category/category/${sub}`);
+    setAnchorEl(null);
+  }
+
+  function handleCloseMenu() {
     setAnchorEl(null);
   }
 
@@ -164,37 +182,58 @@ const Navbar = ({ toggleMobileNav }) => {
         <Toolbar className={classes.headerContainer}>
           <Hidden only={["xs", "sm"]}>
             <nav className={classes.navbar}>
-              {links.map((item, i) => (
-                <>
-                  <NavLink
-                    className={classes.navItem}
-                    to={item.path}
-                    activeClassName={classes.activeNav}
-                    key={i}
-                    exact={item.isExact}
-                    aria-owns={anchorEl ? "simple-menu" : undefined}
-                    aria-haspopup="true"
-                    onMouseOver={(e) => handleClick(e, item)}
-                  >
-                    {item.title}
-                  </NavLink>
-                  <i className={classes.arrow} />
-                </>
-              ))}
+              {links.map((item, i) => {
+                if (i <= 4)
+                  return (
+                    <>
+                      <NavLink
+                        className={"navLinkHover " + classes.navItem}
+                        to={item.path}
+                        activeClassName={classes.activeNav}
+                        key={i}
+                        exact={item.isExact}
+                        aria-owns={"simple-menu"}
+                        aria-haspopup="true"
+                        onMouseOver={(e) => handleClick(e, item)}
+                      >
+                        {item.title}
+                      </NavLink>
+                      <i className={classes.arrow} />
+                    </>
+                  );
+                else if (i === 5)
+                  return (
+                    <>
+                      <NavLink
+                        className={"navLinkHover " + classes.navItem}
+                        to={item.path}
+                        activeClassName={classes.activeNav}
+                        key={i}
+                        exact={item.isExact}
+                        aria-owns={"simple-menu"}
+                        aria-haspopup="true"
+                        onMouseOver={(e) => handleClick(e, "view more")}
+                      >
+                        View more
+                      </NavLink>
+                      <i className={classes.arrow} />
+                    </>
+                  );
+              })}
               <Menu
-                id="simple-menu"
+                // id="simple-menu"
                 anchorEl={anchorEl}
                 getContentAnchorEl={null}
                 anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
                 className={classes.menu}
                 transformOrigin={{ vertical: "top", horizontal: "center" }}
                 open={Boolean(anchorEl)}
-                onClose={handleClose}
-                MenuListProps={{ onMouseLeave: handleClose }}
+                onClose={handleCloseMenu}
+                MenuListProps={{ onMouseLeave: handleCloseMenu }}
               >
                 {subCategory.map((subCategory, index) => (
                   <MenuItem
-                    className={classes.menuItem}
+                    className={"menuItemHover " + classes.menuItem}
                     onClick={() => handleClose(subCategory)}
                   >
                     {subCategory}
@@ -205,7 +244,13 @@ const Navbar = ({ toggleMobileNav }) => {
           </Hidden>
         </Toolbar>
         <Box className={classes.iconContainer}>
-          <PersonOutline className={classes.icon} />
+          <PersonOutline
+            className={classes.icon}
+            onClick={() => {
+              if (isAuthenticate) history.push("/user/dashboard");
+              else history.push("/login");
+            }}
+          />
           <SearchOutlined className={classes.icon} />
           <LocalMallOutlined
             className={classes.icon}
@@ -222,4 +267,14 @@ const Navbar = ({ toggleMobileNav }) => {
   );
 };
 
-export default Navbar;
+Navbar.propTypes = {
+  isAuthenticate: PropTypes.bool.isRequired,
+};
+
+const mapStateToProps = (state) => ({
+  isAuthenticate: state.app.isAuthenticate,
+});
+
+const mapDispatchToProps = {};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Navbar);

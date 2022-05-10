@@ -1,0 +1,78 @@
+.account_details {
+    /* text-align: center; */
+    /* border: 1px solid red; */
+    padding: 2rem 0;
+}
+
+.account_details-form>input {
+    text-transform: capitalize !important;
+}
+
+.textLabel {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.textField {
+    width: 100%;
+    border-radius: 0 !important;
+    border: 1px solid rgb(188, 187, 187);
+    transition: 300ms ease-in-out;
+    height: 2rem;
+    margin: 0.5rem 0;
+}
+
+.twoFields {
+    display: flex;
+}
+
+.twoFields>div {
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    width: 500px;
+    margin: 0 1rem;
+}
+
+.form-wrapper {
+    margin: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+
+.MuiOutlinedInput-colorSecondary.Mui-focused .MuiOutlinedInput-notchedOutline {
+    border-color: black !important;
+}
+
+.MuiFormLabel-colorSecondary.Mui-focused {
+    color: unset !important;
+}
+
+.submit_btn {
+    color: white;
+    padding: 0.8rem 2rem;
+    background: black;
+    font-size: 1rem;
+    transition: 200ms ease-in-out;
+    cursor: pointer;
+    margin-right: 1rem;
+}
+
+.submit_btn:hover {
+    background: rgb(52, 52, 52);
+}
+
+@media only screen and (max-width: 750px) {
+
+    .twoFields {
+        flex-direction: column;
+        margin: 0 !important;
+    }
+
+    .textField {
+        margin: 1rem 0 !important;
+        width: 100%;
+    }
+}
