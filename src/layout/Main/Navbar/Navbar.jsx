@@ -18,11 +18,12 @@ import {
 } from "@material-ui/icons";
 import linksConfig from "../links";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CartSideBar } from "../../../components";
 import Badge from "@material-ui/core/Badge";
 import { useHistory } from "react-router-dom";
 import { connect } from "react-redux";
+import { getSubCategories } from "../../../utils/categories";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -131,12 +132,13 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Navbar = ({ toggleMobileNav, isAuthenticate }) => {
-  let links = linksConfig;
+  // let links = linksConfig;
   const classes = useStyles();
   const history = useHistory();
   const [anchorEl, setAnchorEl] = useState(null);
   const [openCartSidebar, setCartOpenSidebar] = useState(false);
   const [subCategory, setSubCategory] = useState([]);
+  const [links, setLinks] = useState([]);
 
   function handleClick(event, item) {
     if (item === "view more") {
@@ -168,6 +170,42 @@ const Navbar = ({ toggleMobileNav, isAuthenticate }) => {
     setAnchorEl(null);
   }
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const resp = await getSubCategories();
+
+        const allCatagories = resp.data.data.map(
+          (e) => e?.category_name?.category_name
+        );
+
+        const uniqueCategories = [...new Set(allCatagories)];
+
+        const categories = uniqueCategories
+          .map((e) => {
+            const subCategory = resp.data.data.filter(
+              (a) => a?.category_name?.category_name === e
+            );
+
+            if (subCategory)
+              return {
+                title: e,
+                sub: subCategory?.map((x) => x.subcategory_name),
+                path: "/product-category/category/",
+                isExact: true,
+              };
+            return false;
+          })
+          .filter((x) => x);
+
+        setLinks(categories);
+      } catch (error) {
+        console.log(error?.response?.data?.message);
+      }
+    })();
+  }, []);
+
+  console.log(links);
   return (
     <>
       <AppBar className={classes.header}>

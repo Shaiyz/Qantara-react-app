@@ -4,4 +4,7 @@ export const API_ENDPOINTS = {
     LOGIN_USER: "/user/login",
     CHECK_STATE: "/user/check/state",
   },
+  CATEGORIES: {
+    GET_SUBCATEGORIES: "/subcategory",
+  },
 };
