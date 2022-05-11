@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Banner2,
   Banner1,
@@ -8,8 +8,25 @@ import {
 } from "../../components/HomeBanner";
 import NewsLetter from "./NewsLetter";
 import { RecommendedItems } from "../../components";
+import { getAllProducts } from "../../utils/productsUtils";
 
 const Home = () => {
+  const [products, setProducts] = useState(null);
+
+  const fetchInitialData = async () => {
+    try {
+      const resp = await getAllProducts();
+      debugger
+      setProducts(resp.data.data);
+    } catch (error) {
+      console.log(error?.response?.data?.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchInitialData();
+  }, []);
+
   return (
     <>
       <Banner1
@@ -20,7 +37,7 @@ const Home = () => {
         image={"assest/images/home-header-bg.jpg"}
       />
 
-      <RecommendedItems />
+      <RecommendedItems products={products} />
       <Banner2
         title={"New Layers of Luxe"}
         subTitle={

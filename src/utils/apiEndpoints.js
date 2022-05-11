@@ -7,4 +7,7 @@ export const API_ENDPOINTS = {
   CATEGORIES: {
     GET_SUBCATEGORIES: "/subcategory",
   },
+  PRODUCTS: {
+    GET_PRODUCTS: "/product",
+  },
 };

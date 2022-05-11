@@ -23,7 +23,7 @@ import { CartSideBar } from "../../../components";
 import Badge from "@material-ui/core/Badge";
 import { useHistory } from "react-router-dom";
 import { connect } from "react-redux";
-import { getSubCategories } from "../../../utils/categories";
+import { getSubCategories } from "../../../utils/categoriesUtils";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -170,42 +170,43 @@ const Navbar = ({ toggleMobileNav, isAuthenticate }) => {
     setAnchorEl(null);
   }
 
+  const fetchInitialData = async () => {
+    try {
+      const resp = await getSubCategories();
+
+      const allCatagories = resp.data.data.map(
+        (e) => e?.category_name?.category_name
+      );
+
+      const uniqueCategories = [...new Set(allCatagories)];
+
+      const categories = uniqueCategories
+        .map((e) => {
+          const subCategory = resp.data.data.filter(
+            (a) => a?.category_name?.category_name === e
+          );
+
+          if (subCategory)
+            return {
+              title: e,
+              sub: subCategory?.map((x) => x.subcategory_name),
+              path: "/product-category/category/",
+              isExact: true,
+            };
+          return false;
+        })
+        .filter((x) => x);
+
+      setLinks(categories);
+    } catch (error) {
+      console.log(error?.response?.data?.message);
+    }
+  };
+
   useEffect(() => {
-    (async () => {
-      try {
-        const resp = await getSubCategories();
-
-        const allCatagories = resp.data.data.map(
-          (e) => e?.category_name?.category_name
-        );
-
-        const uniqueCategories = [...new Set(allCatagories)];
-
-        const categories = uniqueCategories
-          .map((e) => {
-            const subCategory = resp.data.data.filter(
-              (a) => a?.category_name?.category_name === e
-            );
-
-            if (subCategory)
-              return {
-                title: e,
-                sub: subCategory?.map((x) => x.subcategory_name),
-                path: "/product-category/category/",
-                isExact: true,
-              };
-            return false;
-          })
-          .filter((x) => x);
-
-        setLinks(categories);
-      } catch (error) {
-        console.log(error?.response?.data?.message);
-      }
-    })();
+    fetchInitialData();
   }, []);
 
-  console.log(links);
   return (
     <>
       <AppBar className={classes.header}>

@@ -5,7 +5,9 @@ import {
   makeStyles,
   Typography,
 } from "@material-ui/core";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { getAllProducts } from "../../utils/productsUtils";
 
 const useStyles = makeStyles((theme) => ({
   section: {
@@ -112,16 +114,20 @@ const useStyles = makeStyles((theme) => ({
 
 const ProductDetails = () => {
   const classes = useStyles();
+  const params = useParams();
+  const { productID } = params;
 
-  const [{ loading, errors, product }, setState] = useState({
+  const [{ loading, errors }, setState] = useState({
     loading: false,
     errors: null,
-    product: {
-      sku: "1",
-      product_name: "“GOLD LEAF MINI GLASS TRAY-METAL RIM-RE/L”",
-      product_price: "120",
-    },
+    // product: {
+    //   sku: "1",
+    //   product_name: "“GOLD LEAF MINI GLASS TRAY-METAL RIM-RE/L”",
+    //   product_price: "120",
+    // },
   });
+
+  const [product, setProduct] = useState(null);
 
   // if (loading) {
   //   return (
@@ -153,12 +159,26 @@ const ProductDetails = () => {
   //   );
   // }
 
+  const fetchInitialData = async () => {
+    try {
+      const resp = await getAllProducts(productID);
+      setProduct(resp.data.data[0]);
+    } catch (error) {
+      console.log(error?.response?.data?.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchInitialData();
+  }, []);
+
   if (!product) {
     return null;
   }
   const handleSubmit = (e) => {
     e.preventDefault();
   };
+
   return (
     <>
       <section className={classes.section}>
@@ -167,7 +187,11 @@ const ProductDetails = () => {
             <Grid item xs={12} sm={12} lg={6}>
               <div style={{ justifyContent: "center", display: "flex" }}>
                 <img
-                  src="/assets/images/test.jpg"
+                  src={
+                    product?.product_images?.length > 0
+                      ? product?.product_images[0]?.image
+                      : "/assets/images/test.jpg"
+                  }
                   className={classes.productImage}
                   alt={product.sku}
                 />

@@ -24,6 +24,7 @@ import Badge from "@material-ui/core/Badge";
 import React from "react";
 import { useHistory } from "react-router-dom";
 import { connect } from "react-redux";
+import { getSubCategories } from "../../../utils/categoriesUtils";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -201,13 +202,14 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Navbar = ({ toggleMobileNav, isAuthenticate }) => {
-  let links = linksConfig;
+  // let links = linksConfig;
   const classes = useStyles();
   const history = useHistory();
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [openCartSidebar, setCartOpenSidebar] = useState(false);
   const [state, setScroll] = useState(false);
+  const [links, setLinks] = useState([]);
 
   const [subCategory, setSubCategory] = useState([]);
 
@@ -239,7 +241,41 @@ const Navbar = ({ toggleMobileNav, isAuthenticate }) => {
     }
   };
 
+  const fetchInitialData = async () => {
+    try {
+      const resp = await getSubCategories();
+
+      const allCatagories = resp.data.data.map(
+        (e) => e?.category_name?.category_name
+      );
+
+      const uniqueCategories = [...new Set(allCatagories)];
+
+      const categories = uniqueCategories
+        .map((e) => {
+          const subCategory = resp.data.data.filter(
+            (a) => a?.category_name?.category_name === e
+          );
+
+          if (subCategory)
+            return {
+              title: e,
+              sub: subCategory?.map((x) => x.subcategory_name),
+              path: "/product-category/category/",
+              isExact: true,
+            };
+          return false;
+        })
+        .filter((x) => x);
+
+      setLinks(categories);
+    } catch (error) {
+      console.log(error?.response?.data?.message);
+    }
+  };
+
   React.useEffect(() => {
+    fetchInitialData();
     window.addEventListener("scroll", handleScroll);
     return () => {
       window.removeEventListener("scroll", handleScroll);

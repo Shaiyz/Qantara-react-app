@@ -81,7 +81,7 @@ function Routes({ isAuthenticate }) {
           layout={MainLayout}
         />
         <RouteWithLayout
-          path="/product/:id"
+          path="/product/:productID"
           exact
           component={ProductDetails}
           layout={MainLayout}
