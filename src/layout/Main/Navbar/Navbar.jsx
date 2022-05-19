@@ -24,6 +24,7 @@ import Badge from "@material-ui/core/Badge";
 import { useHistory } from "react-router-dom";
 import { connect } from "react-redux";
 import { getSubCategories } from "../../../utils/categoriesUtils";
+import { setIsCartUpdate } from "../../../lib/actions";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -131,7 +132,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Navbar = ({ toggleMobileNav, isAuthenticate }) => {
+const Navbar = ({
+  toggleMobileNav,
+  isAuthenticate,
+  setIsCartUpdateConnect,
+  isCartUpdate,
+}) => {
   // let links = linksConfig;
   const classes = useStyles();
   const history = useHistory();
@@ -139,6 +145,7 @@ const Navbar = ({ toggleMobileNav, isAuthenticate }) => {
   const [openCartSidebar, setCartOpenSidebar] = useState(false);
   const [subCategory, setSubCategory] = useState([]);
   const [links, setLinks] = useState([]);
+  const [cartItems, setCartItems] = useState(0);
 
   function handleClick(event, item) {
     if (item === "view more") {
@@ -162,7 +169,7 @@ const Navbar = ({ toggleMobileNav, isAuthenticate }) => {
   };
 
   function handleClose(sub) {
-    history.push(`/product-category/category/${sub}`);
+    history.push(`/product-category/${sub?.subcategory_name}/${sub?.value}`);
     setAnchorEl(null);
   }
 
@@ -189,7 +196,10 @@ const Navbar = ({ toggleMobileNav, isAuthenticate }) => {
           if (subCategory)
             return {
               title: e,
-              sub: subCategory?.map((x) => x.subcategory_name),
+              sub: subCategory?.map((x) => ({
+                subcategory_name: x?.subcategory_name,
+                value: x?._id,
+              })),
               path: "/product-category/category/",
               isExact: true,
             };
@@ -203,8 +213,33 @@ const Navbar = ({ toggleMobileNav, isAuthenticate }) => {
     }
   };
 
+  const countCartItem = () => {
+    if (window.localStorage.getItem("cart")) {
+      const cartList = JSON.parse(window.localStorage.getItem("cart"));
+
+      const count =
+        (cartList?.length &&
+          cartList.filter((x) => x?.quantity !== 0)?.length) ||
+        0;
+
+      const list = cartList.filter((e) => e?.quantity !== 0);
+      window.localStorage.setItem("cart", JSON.stringify(list));
+      setCartItems(count);
+    } else {
+      setCartItems(0);
+    }
+  };
+
+  useEffect(() => {
+    if (!isCartUpdate) return;
+
+    countCartItem();
+    setIsCartUpdateConnect(false);
+  }, [isCartUpdate]);
+
   useEffect(() => {
     fetchInitialData();
+    countCartItem();
   }, []);
 
   return (
@@ -275,7 +310,7 @@ const Navbar = ({ toggleMobileNav, isAuthenticate }) => {
                     className={"menuItemHover " + classes.menuItem}
                     onClick={() => handleClose(subCategory)}
                   >
-                    {subCategory}
+                    {subCategory?.subcategory_name}
                   </MenuItem>
                 ))}
               </Menu>
@@ -296,7 +331,7 @@ const Navbar = ({ toggleMobileNav, isAuthenticate }) => {
             onClick={() => toggleCartNav()}
           />
           <Badge
-            badgeContent={1}
+            badgeContent={cartItems || "0"}
             classes={{ badge: classes.customBadge }}
           ></Badge>
         </Box>
@@ -308,12 +343,17 @@ const Navbar = ({ toggleMobileNav, isAuthenticate }) => {
 
 Navbar.propTypes = {
   isAuthenticate: PropTypes.bool.isRequired,
+  isCartUpdate: PropTypes.bool.isRequired,
+  setIsCartUpdateConnect: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
   isAuthenticate: state.app.isAuthenticate,
+  isCartUpdate: state.app.isCartUpdate,
 });
 
-const mapDispatchToProps = {};
+const mapDispatchToProps = {
+  setIsCartUpdateConnect: setIsCartUpdate,
+};
 
 export default connect(mapStateToProps, mapDispatchToProps)(Navbar);

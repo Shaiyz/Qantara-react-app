@@ -7,8 +7,9 @@ import {
   Typography,
 } from "@material-ui/core";
 import ProductCard from "../ProductCard";
+import Loader from "../common/Loader";
 
-const RecommendedProducts = ({ size, products }) => {
+const RecommendedProducts = ({ size, products, loading }) => {
   const useStyles = makeStyles((theme) => ({
     bannerSubHeading: {
       fontSize: "34px",
@@ -21,27 +22,28 @@ const RecommendedProducts = ({ size, products }) => {
   }));
   let errors = null;
   const classes = useStyles();
-  const [isShoAddCartBtn, setIsShoAddCartBtn] = useState(
+  const [isShowAddCartBtn, setIsShowAddCartBtn] = useState(
     [...Array(products?.length)].fill(false)
   );
 
   const onMouseOverHandler = (index) => {
-    const [...rest] = isShoAddCartBtn;
+    const [...rest] = isShowAddCartBtn;
     rest[index] = true;
-    setIsShoAddCartBtn(rest);
+    setIsShowAddCartBtn(rest);
   };
   const onMouseLeaveHandler = (index) => {
-    const [...rest] = isShoAddCartBtn;
+    const [...rest] = isShowAddCartBtn;
     rest[index] = false;
-    setIsShoAddCartBtn(rest);
+    setIsShowAddCartBtn(rest);
   };
 
   return (
     <>
       <Container style={{ marginTop: "60px", marginBottom: "60px" }}>
         <h2 className={classes.bannerSubHeading}>Items You Will Love</h2>
-
-        {products?.length > 0 ? (
+        {loading ? (
+          <Loader />
+        ) : products?.length > 0 ? (
           <Grid container spacing={2} style={{ justifyContent: "center" }}>
             {products.map((item, index) => (
               <Grid
@@ -60,111 +62,19 @@ const RecommendedProducts = ({ size, products }) => {
               >
                 <ProductCard
                   product={item}
-                  isShowAddToCartBtn={isShoAddCartBtn[index]}
+                  isShowAddToCartBtn={isShowAddCartBtn[index]}
                 />
               </Grid>
             ))}
           </Grid>
         ) : (
-          <Box>
-            {errors ? (
-              <Box textAlign="center">
-                <Typography varaint="subtitle2" color="error">
-                  {errors}
-                </Typography>
-              </Box>
-            ) : (
-              <></>
-              //   <Skeleton animation="wave" />
-            )}
-          </Box>
+          <>
+            <h2>No Products</h2>
+          </>
         )}
       </Container>
     </>
   );
-};
-
-RecommendedProducts.defaultProps = {
-  products: [
-    {
-      product_name: "Kintsugi",
-      quantity: 2,
-      product_price: 399,
-      product_images: [
-        {
-          img: "assets/images/test.jpg",
-        },
-        {
-          img: "assets/images/logo2.png",
-        },
-      ],
-    },
-    {
-      product_name: "Kintsugi",
-      quantity: 2,
-      product_price: 399,
-      product_images: [
-        {
-          img: "assets/images/logo1.png",
-        },
-        {
-          img: "assets/images/logo2.png",
-        },
-      ],
-    },
-    {
-      product_name: "Plate",
-      quantity: 3,
-      product_price: 499,
-      product_images: [
-        {
-          img: "assets/images/logo1.png",
-        },
-        {
-          img: "assets/images/logo2.png",
-        },
-      ],
-    },
-    {
-      product_name: "Kintsugi",
-      quantity: 2,
-      product_price: 399,
-      product_images: [
-        {
-          img: "assets/images/logo1.png",
-        },
-        {
-          img: "assets/images/logo2.png",
-        },
-      ],
-    },
-    {
-      product_name: "Kintsugi",
-      quantity: 2,
-      product_price: 399,
-      product_images: [
-        {
-          img: "assets/images/logo1.png",
-        },
-        {
-          img: "assets/images/logo2.png",
-        },
-      ],
-    },
-    {
-      product_name: "Kintsugi",
-      quantity: 2,
-      product_price: 399,
-      product_images: [
-        {
-          img: "assets/images/logo1.png",
-        },
-        {
-          img: "assets/images/logo2.png",
-        },
-      ],
-    },
-  ],
 };
 
 export default RecommendedProducts;

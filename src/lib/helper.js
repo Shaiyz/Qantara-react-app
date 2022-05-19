@@ -33,3 +33,6 @@ export const setAccessToken = (token) =>
 export const getAccessToken = () => window.localStorage.getItem("token");
 
 export const deleteAccessToken = () => window.localStorage.removeItem("token");
+
+export const createURLencode = (data) => encodeURI(JSON.stringify(data));
+

@@ -210,6 +210,7 @@ const Navbar = ({ toggleMobileNav, isAuthenticate }) => {
   const [openCartSidebar, setCartOpenSidebar] = useState(false);
   const [state, setScroll] = useState(false);
   const [links, setLinks] = useState([]);
+  const [cartItems, setCartItems] = useState(0);
 
   const [subCategory, setSubCategory] = useState([]);
 
@@ -225,7 +226,7 @@ const Navbar = ({ toggleMobileNav, isAuthenticate }) => {
   };
 
   function handleClose(sub) {
-    history.push(`/product-category/category/${sub}`);
+    history.push(`/product-category/${sub?.subcategory_name}/${sub?.value}`);
     setAnchorEl(null);
   }
 
@@ -260,7 +261,10 @@ const Navbar = ({ toggleMobileNav, isAuthenticate }) => {
           if (subCategory)
             return {
               title: e,
-              sub: subCategory?.map((x) => x.subcategory_name),
+              sub: subCategory?.map((x) => ({
+                subcategory_name: x.subcategory_name,
+                value: x?._id,
+              })),
               path: "/product-category/category/",
               isExact: true,
             };
@@ -274,8 +278,24 @@ const Navbar = ({ toggleMobileNav, isAuthenticate }) => {
     }
   };
 
+  const countCartItem = () => {
+    if (window.localStorage.getItem("cart")) {
+      const cartList = JSON.parse(window.localStorage.getItem("cart"));
+
+      const count =
+        (cartList?.length &&
+          cartList.filter((x) => x?.quantity !== 0)?.length) ||
+        0;
+
+      setCartItems(count);
+    } else {
+      setCartItems(0);
+    }
+  };
+
   React.useEffect(() => {
     fetchInitialData();
+    countCartItem();
     window.addEventListener("scroll", handleScroll);
     return () => {
       window.removeEventListener("scroll", handleScroll);
@@ -334,7 +354,7 @@ const Navbar = ({ toggleMobileNav, isAuthenticate }) => {
                     //   (e.target.style.backgroundColor = "white")
                     // }
                   >
-                    {subCategory}
+                    {subCategory?.subcategory_name}
                   </MenuItem>
                 ))}
               </Menu>
@@ -355,7 +375,7 @@ const Navbar = ({ toggleMobileNav, isAuthenticate }) => {
             onClick={() => toggleCartNav()}
           />
           <Badge
-            badgeContent={1}
+            badgeContent={cartItems || "0"}
             classes={{ badge: classes.customBadge }}
           ></Badge>
         </Box>

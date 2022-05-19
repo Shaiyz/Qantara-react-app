@@ -6,8 +6,13 @@ import {
   Typography,
 } from "@material-ui/core";
 import React, { useEffect, useState } from "react";
+import PropTypes from "prop-types";
 import { useParams } from "react-router-dom";
+import { setIsCartUpdate, setNotificationMessage } from "../../lib/actions";
 import { getAllProducts } from "../../utils/productsUtils";
+import { connect, useDispatch, useSelector } from "react-redux";
+import { toast } from "../../lib/helper";
+import Loader from "../../components/common/Loader";
 
 const useStyles = makeStyles((theme) => ({
   section: {
@@ -25,8 +30,8 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   form: {
-    marginTop: "15px",
-    marginBottom: "20px",
+    marginTop: "1.5rem",
+    // marginBottom: "20px",
     display: "flex",
     flexDirection: "row",
   },
@@ -112,61 +117,113 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ProductDetails = () => {
+const ProductDetails = ({
+  setNotificationMessageConnect,
+  setIsCartUpdateConnect,
+}) => {
   const classes = useStyles();
   const params = useParams();
+  const isCartUpdate = useSelector((state) => state.app);
+  const dispatch = useDispatch();
   const { productID } = params;
 
-  const [{ loading, errors }, setState] = useState({
-    loading: false,
-    errors: null,
-    // product: {
-    //   sku: "1",
-    //   product_name: "“GOLD LEAF MINI GLASS TRAY-METAL RIM-RE/L”",
-    //   product_price: "120",
-    // },
-  });
-
   const [product, setProduct] = useState(null);
+  const [quantity, setQuantity] = useState(0);
+  const [loading, setLoading] = useState(false);
 
-  // if (loading) {
-  //   return (
-  //     <div
-  //       style={{
-  //         height: "80vh",
-  //         display: "flex",
-  //         justifyContent: "center",
-  //         alignItems: "center",
-  //       }}
-  //     >
-  //       <CircularProgress size={72} />
-  //     </div>
-  //   );
-  // }
+  const addQuantity = () => setQuantity(quantity + 1);
 
-  // if (errors) {
-  //   return (
-  //     <div
-  //       style={{
-  //         height: "80vh",
-  //         display: "flex",
-  //         justifyContent: "center",
-  //         alignItems: "center",
-  //       }}
-  //     >
-  //       <Alert variant="error">{errors}</Alert>
-  //     </div>
-  //   );
-  // }
+  const minusQuantity = () => {
+    if (quantity === 0) {
+      toast.error(setNotificationMessageConnect, "Quantity cannot be in minus");
+      setQuantity(0);
+      return;
+    }
+    setQuantity(quantity - 1);
+  };
 
-  const fetchInitialData = async () => {
-    try {
-      const resp = await getAllProducts(productID);
-      setProduct(resp.data.data[0]);
-    } catch (error) {
-      console.log(error?.response?.data?.message);
+  const addToCartHandler = () => {
+    if (window.localStorage.getItem("cart")) {
+      const cartList = JSON.parse(window.localStorage.getItem("cart"));
+
+      const isProductExistInCart = cartList.find(
+        (x) => x.productID === productID
+      );
+
+      if (isProductExistInCart) {
+        cartList[
+          cartList.indexOf(cartList.find((x) => x.productID === productID))
+        ] = {
+          quantity,
+          productID,
+        };
+      } else {
+        cartList.push({
+          quantity,
+          productID,
+        });
+      }
+      window.localStorage.setItem("cart", JSON.stringify(cartList));
+    } else {
+      const cartList = [
+        {
+          quantity,
+          productID,
+        },
+      ];
+      window.localStorage.setItem("cart", JSON.stringify(cartList));
+    }
+
+    setIsCartUpdateConnect(true);
+  };
+
+  const isCartHasSomething = () => {
+    if (window.localStorage.getItem("cart")) {
+      const cartList = JSON.parse(window.localStorage.getItem("cart"));
+
+      const isProductExistInCart = cartList.find(
+        (x) => x.productID === productID
+      );
+
+      if (isProductExistInCart) {
+        return Number(isProductExistInCart?.quantity);
+      }
+
+      return 0;
+    } else {
+      return 0;
     }
   };
+
+  const fetchInitialData = async () => {
+    setLoading(true);
+    try {
+      const resp = await getAllProducts(productID);
+      const quantity = await isCartHasSomething();
+      setProduct(resp.data.data[0]);
+      setQuantity(quantity);
+    } catch (error) {
+      console.log(error?.response?.data?.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (window.localStorage.getItem("cart")) {
+      const cartList = JSON.parse(window.localStorage.getItem("cart"));
+
+      const isProductExistInCart = cartList.find(
+        (x) => x.productID === productID
+      );
+
+      setQuantity(
+        isProductExistInCart ? Number(isProductExistInCart?.quantity) : 0
+      );
+    } else {
+      setQuantity(0);
+    }
+  }, [isCartUpdate]);
 
   useEffect(() => {
     fetchInitialData();
@@ -179,65 +236,108 @@ const ProductDetails = () => {
     e.preventDefault();
   };
 
-  return (
-    <>
-      <section className={classes.section}>
-        <Container>
-          <Grid container justifyContent="center" spacing={5}>
-            <Grid item xs={12} sm={12} lg={6}>
-              <div style={{ justifyContent: "center", display: "flex" }}>
-                <img
-                  src={
-                    product?.product_images?.length > 0
-                      ? product?.product_images[0]?.image
-                      : "/assets/images/test.jpg"
-                  }
-                  className={classes.productImage}
-                  alt={product.sku}
-                />
-              </div>
-            </Grid>
-            <Grid item xs={12} sm={12} lg={6}>
-              <Typography variant="h5">{product.product_name}</Typography>
-              <Typography variant="h5">{product.product_price}</Typography>
-              <Typography
-                variant="subtitle1"
-                style={{ marginTop: "20px", fontSize: "16px", opacity: "0.7" }}
-              >
-                5 IN STOCK
-              </Typography>
-              <form className={classes.form} onSubmit={handleSubmit}>
-                <div>
-                  <div className={classes.minus}>-</div>
-                  <input className={classes.input} />
+  if (loading) return <Loader height={"60vh"} />;
 
-                  <div className={classes.plus}>+</div>
+  return (
+    <section className={classes.section}>
+      <Container>
+        <Grid container justifyContent="center" spacing={5}>
+          <Grid item xs={12} sm={12} lg={6}>
+            <div style={{ justifyContent: "center", display: "flex" }}>
+              <img
+                src={
+                  product?.product_images?.length > 0
+                    ? product?.product_images[0]?.image
+                    : "/assets/images/test.jpg"
+                }
+                className={classes.productImage}
+                alt={product.sku}
+              />
+            </div>
+          </Grid>
+          <Grid item xs={12} sm={12} lg={6}>
+            <Typography variant="h5" style={{ textTransform: "capitalize" }}>
+              {product.product_name}
+            </Typography>
+            <Typography variant="h5">{product.product_price}</Typography>
+            <Typography
+              variant="subtitle1"
+              style={{
+                marginTop: "0.5rem",
+                fontSize: "0.75rem",
+                opacity: "0.6",
+              }}
+            >
+              <strong>5 IN STOCK</strong>
+            </Typography>
+            <br />
+            <form className={classes.form} onSubmit={handleSubmit}>
+              <div>
+                <div className={classes.minus} onClick={minusQuantity}>
+                  -
                 </div>
-                <div>
-                  <button type="submit" className={classes.button}>
-                    Add to Cart
-                  </button>
+                <input className={classes.input} value={quantity} />
+
+                <div className={classes.plus} onClick={addQuantity}>
+                  +
                 </div>
-              </form>
-              <Box></Box>
-              <Typography
+              </div>
+              <div>
+                <button
+                  type="submit"
+                  className={classes.button}
+                  onClick={addToCartHandler}
+                >
+                  Add to Cart
+                </button>
+              </div>
+            </form>
+            <Box></Box>
+            {/* <Typography
                 variant="subtitle1"
                 style={{ marginTop: "20px", fontSize: "16px", opacity: "0.7" }}
               >
                 SKU:{product.sku}
-              </Typography>
-              <Typography
-                variant="subtitle1"
-                style={{ marginTop: "20px", fontSize: "16px", opacity: "0.7" }}
-              >
-                <strong>CATEGORIES:</strong> Categories
-              </Typography>
-            </Grid>
+              </Typography> */}
+            <Typography
+              variant="subtitle1"
+              style={{ fontSize: "16px", opacity: "0.7" }}
+            >
+              <strong>Category:</strong>{" "}
+              {product?.product_category?.category_name}
+            </Typography>
+            <br />
+            <Typography
+              variant="subtitle1"
+              style={{ fontSize: "16px", opacity: "0.7" }}
+            >
+              <strong>Sub Category:</strong>{" "}
+              {product?.product_subcategory?.subcategory_name}
+            </Typography>
+            <br />
+            <Typography
+              variant="subtitle1"
+              style={{ fontSize: "16px", opacity: "0.7" }}
+            >
+              <strong>Tags:</strong> {product?.product_tags?.join(", ")}
+            </Typography>
           </Grid>
-        </Container>
-      </section>
-    </>
+        </Grid>
+      </Container>
+    </section>
   );
 };
 
-export default ProductDetails;
+ProductDetails.propTypes = {
+  setNotificationMessageConnect: PropTypes.func.isRequired,
+  setIsCartUpdateConnect: PropTypes.func.isRequired,
+};
+
+const mapStateToProps = (state) => ({});
+
+const mapDispatchToProps = {
+  setNotificationMessageConnect: setNotificationMessage,
+  setIsCartUpdateConnect: setIsCartUpdate,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(ProductDetails);

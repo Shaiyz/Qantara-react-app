@@ -1,5 +1,6 @@
 import {
   SET_IS_AUTHENTICATE,
+  SET_IS_CART_UPDATE,
   SET_NOTIFICATION_MESSAGE,
   SET_USER_DATA,
 } from "../constant";
@@ -17,6 +18,7 @@ const initialState = {
     notificationMessage: "",
     color: "",
   },
+  isCartUpdate: false,
 };
 
 export const appReducer = (state = initialState, action) => {
@@ -37,6 +39,12 @@ export const appReducer = (state = initialState, action) => {
       state = {
         ...state,
         notificationObj: action.payload,
+      };
+      break;
+    case SET_IS_CART_UPDATE:
+      state = {
+        ...state,
+        isCartUpdate: action.payload,
       };
       break;
   }

@@ -3,10 +3,7 @@ import { useEffect } from "react";
 import { connect } from "react-redux";
 import { setNotificationMessage } from "../../lib/actions";
 
-const Toast = ({
-  notificationObj,
-  setNotificationMessageConnect,
-}) => {
+const Toast = ({ notificationObj, setNotificationMessageConnect }) => {
   useEffect(() => {
     (() => {
       if (notificationObj.isShowNotification) {

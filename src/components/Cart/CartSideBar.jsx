@@ -13,10 +13,14 @@ import { Drawer } from "@material-ui/core";
 
 // import linksConfig from "../links";
 import { Close, ExpandLess, ExpandMore } from "@material-ui/icons";
+import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
+import { setIsCartUpdate } from "../../lib/actions";
 // import ListCustomItem from "./ListCustomItem";
 // import { useSelector } from 'react-redux'
+import { getAllProducts } from "../../utils/productsUtils";
 
 const useStyles = makeStyles((theme) => ({
   drawer: {
@@ -88,8 +92,8 @@ const useStyles = makeStyles((theme) => ({
     color: "black",
   },
   extraSmallIcon: {
-    width: 10,
-    height: 10,
+    width: 15,
+    height: 15,
   },
   button: {
     backgroundColor: "rgba(0, 0, 0, 0.01)",
@@ -144,53 +148,140 @@ const useStyles = makeStyles((theme) => ({
 const CartSidebar = (props) => {
   const classes = useStyles();
   const history = useHistory();
+  const dispatch = useDispatch();
   const { open, onClose } = props;
-  const removeFromCart = (item) => {};
+
+  const [cartDetails, setCartDetails] = useState(null);
+  const [selectedCartItems, setSelectedCartItems] = useState(null);
+
+  const removeFromCart = (removeID) => {
+    const list = window.localStorage.getItem("cart")
+      ? JSON.parse(window.localStorage.getItem("cart"))
+      : null;
+
+    const updateCart = list.filter(
+      (e) => String(e?.productID) !== String(removeID)
+    );
+
+    setSelectedCartItems(updateCart);
+    window.localStorage.setItem("cart", JSON.stringify(updateCart));
+    dispatch(setIsCartUpdate(true));
+  };
+
+  const fetchInitialData = async () => {
+    try {
+      const list = window.localStorage.getItem("cart")
+        ? JSON.parse(window.localStorage.getItem("cart"))
+        : null;
+
+      setSelectedCartItems(
+        list?.length > 0 ? list.filter((x) => x?.quantity !== 0) : null
+      );
+
+      const resp = await getAllProducts();
+      setCartDetails(resp.data.data);
+    } catch (error) {
+      console.log(error?.response?.data?.message || error);
+    }
+  };
+
+  const calculateTotalAmount = () => {
+    const list = window.localStorage.getItem("cart")
+      ? JSON.parse(window.localStorage.getItem("cart"))
+      : null;
+
+    if (!selectedCartItems?.length) return 0;
+
+    if (!cartDetails?.length) return 0;
+
+    return list.reduce((a, b) => {
+      const result =
+        cartDetails.find((x) => String(x?._id) === String(b?.productID))
+          ?.product_price * b?.quantity;
+      return (a += result);
+    }, 0);
+  };
+
+  useEffect(() => {
+    if (!open) return;
+
+    const list = window.localStorage.getItem("cart")
+      ? JSON.parse(window.localStorage.getItem("cart"))
+      : null;
+
+    setSelectedCartItems(
+      list?.length > 0 ? list.filter((x) => x?.quantity !== 0) : null
+    );
+  }, [open]);
+
+  useEffect(() => {
+    fetchInitialData();
+  }, []);
 
   const drawer = (
     <div>
       <Toolbar className={classes.toolbar}>
-        <Typography>Shopping Bag</Typography>
+        <Typography>Cart Details</Typography>
         <Close style={{ cursor: "pointer" }} onClick={() => onClose()} />
       </Toolbar>
       <Divider />
       <Container className={classes.cartList}>
         <List>
-          {props.cart.map((item, index) => (
-            <ListItem>
-              <CardMedia
-                component="img"
-                style={{ width: "20%" }}
-                // image={item.product_images[0].img}
-                image={"assets/images/test.jpg"}
-                alt="Product image"
-              />
-              <Box className={classes.productInfo}>
-                <Link
-                  className={classes.productName}
-                  to={`/product/${item._id}`}
-                >
-                  {item.product_name}
-                </Link>
+          {selectedCartItems?.length && cartDetails?.length ? (
+            cartDetails.map((item, index) => {
+              if (
+                selectedCartItems?.find(
+                  (x) => String(x?.productID) === String(item?._id)
+                )
+              ) {
+                const selectedItem = selectedCartItems?.find(
+                  (x) => String(x?.productID) === String(item?._id)
+                );
 
-                <Typography variant="subtitle1" color="text.secondary">
-                  <small>
-                    {item.quantity} x {item.product_price}{" "}
-                  </small>
-                </Typography>
-              </Box>
-              <Close
-                style={{
-                  position: "absolute",
-                  right: "20px",
-                  top: "5px",
-                  cursor: "pointer",
-                }}
-                className={classes.extraSmallIcon}
-                onClick={() => removeFromCart(item)}
-              />
-            </ListItem>
-          ))}
+                return (
+                  <ListItem>
+                    <CardMedia
+                      component="img"
+                      style={{ width: "20%" }}
+                      image={item?.product_images[0]?.image}
+                      // image={"assets/images/test.jpg"}
+                      alt="Product image"
+                    />
+                    <Box className={classes.productInfo}>
+                      <Link
+                        className={classes.productName}
+                        to={`/product/${item._id}`}
+                      >
+                        {item?.product_name}
+                      </Link>
+
+                      <Typography
+                        variant="subtitle1"
+                        color="text.secondary"
+                        style={{ marginTop: "1rem" }}
+                      >
+                        <small>
+                          {selectedItem?.quantity || 0} x {item?.product_price}
+                        </small>
+                      </Typography>
+                    </Box>
+                    <Close
+                      style={{
+                        position: "absolute",
+                        right: "20px",
+                        top: "5px",
+                        cursor: "pointer",
+                      }}
+                      className={classes.extraSmallIcon}
+                      onClick={() => removeFromCart(item?._id)}
+                    />
+                  </ListItem>
+                );
+              }
+            })
+          ) : (
+            <h2>No products</h2>
+          )}
         </List>
       </Container>
 
@@ -206,11 +297,14 @@ const CartSidebar = (props) => {
         <div className={classes.subTotal}>
           <Typography variant="subtitle1">
             <strong>Subtotal:</strong>
+            <strong>{calculateTotalAmount()}</strong>
           </Typography>
-          <Typography variant="subtitle1">
+          {/* <Typography variant="subtitle1">
             <strong>100</strong>
-          </Typography>
+            <strong>100</strong>
+          </Typography> */}
         </div>
+        <br />
         <hr style={{ border: "1px solid #eaeaea" }} />
         <br />
         <button
@@ -248,87 +342,87 @@ const CartSidebar = (props) => {
   );
 };
 
-CartSidebar.defaultProps = {
-  cart: [
-    {
-      product_name: "Kintsugi",
-      quantity: 2,
-      product_price: 399,
-      product_images: [
-        {
-          img: "assets/images/logo1.png",
-        },
-        {
-          img: "assets/images/logo2.png",
-        },
-      ],
-    },
-    {
-      product_name: "Kintsugi",
-      quantity: 2,
-      product_price: 399,
-      product_images: [
-        {
-          img: "assets/images/logo1.png",
-        },
-        {
-          img: "assets/images/logo2.png",
-        },
-      ],
-    },
-    {
-      product_name: "Plate",
-      quantity: 3,
-      product_price: 499,
-      product_images: [
-        {
-          img: "assets/images/logo1.png",
-        },
-        {
-          img: "assets/images/logo2.png",
-        },
-      ],
-    },
-    {
-      product_name: "Kintsugi",
-      quantity: 2,
-      product_price: 399,
-      product_images: [
-        {
-          img: "assets/images/logo1.png",
-        },
-        {
-          img: "assets/images/logo2.png",
-        },
-      ],
-    },
-    {
-      product_name: "Kintsugi",
-      quantity: 2,
-      product_price: 399,
-      product_images: [
-        {
-          img: "assets/images/logo1.png",
-        },
-        {
-          img: "assets/images/logo2.png",
-        },
-      ],
-    },
-    {
-      product_name: "Kintsugi",
-      quantity: 2,
-      product_price: 399,
-      product_images: [
-        {
-          img: "assets/images/logo1.png",
-        },
-        {
-          img: "assets/images/logo2.png",
-        },
-      ],
-    },
-  ],
-};
+// CartSidebar.defaultProps = {
+//   cart: [
+//     {
+//       product_name: "Kintsugi",
+//       quantity: 2,
+//       product_price: 399,
+//       product_images: [
+//         {
+//           img: "assets/images/logo1.png",
+//         },
+//         {
+//           img: "assets/images/logo2.png",
+//         },
+//       ],
+//     },
+//     {
+//       product_name: "Kintsugi",
+//       quantity: 2,
+//       product_price: 399,
+//       product_images: [
+//         {
+//           img: "assets/images/logo1.png",
+//         },
+//         {
+//           img: "assets/images/logo2.png",
+//         },
+//       ],
+//     },
+//     {
+//       product_name: "Plate",
+//       quantity: 3,
+//       product_price: 499,
+//       product_images: [
+//         {
+//           img: "assets/images/logo1.png",
+//         },
+//         {
+//           img: "assets/images/logo2.png",
+//         },
+//       ],
+//     },
+//     {
+//       product_name: "Kintsugi",
+//       quantity: 2,
+//       product_price: 399,
+//       product_images: [
+//         {
+//           img: "assets/images/logo1.png",
+//         },
+//         {
+//           img: "assets/images/logo2.png",
+//         },
+//       ],
+//     },
+//     {
+//       product_name: "Kintsugi",
+//       quantity: 2,
+//       product_price: 399,
+//       product_images: [
+//         {
+//           img: "assets/images/logo1.png",
+//         },
+//         {
+//           img: "assets/images/logo2.png",
+//         },
+//       ],
+//     },
+//     {
+//       product_name: "Kintsugi",
+//       quantity: 2,
+//       product_price: 399,
+//       product_images: [
+//         {
+//           img: "assets/images/logo1.png",
+//         },
+//         {
+//           img: "assets/images/logo2.png",
+//         },
+//       ],
+//     },
+//   ],
+// };
 
 export default CartSidebar;

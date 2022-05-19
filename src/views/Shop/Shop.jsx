@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { PageBanner1 } from "../../components";
 import { ProductCard, Sorting } from "../../components";
 import {
@@ -10,18 +10,39 @@ import {
   Select,
   Typography,
 } from "@material-ui/core";
+import { getSubCategories } from "../../utils/categoriesUtils";
+import Loader from "../../components/common/Loader";
+import { getAllProducts } from "../../utils/productsUtils";
 const useStyles = makeStyles((theme) => ({
   shop: {
     padding: "80px 80px",
   },
   searchResults: {
     padding: "10px",
-    whiteSpace:'nowrap'
+    whiteSpace: "nowrap",
   },
 }));
-const Shop = ({ products }) => {
+const Shop = ({}) => {
   let errors = null;
   const classes = useStyles();
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchInitialData = async () => {
+    setLoading(true);
+    try {
+      const resp = await getAllProducts();
+      setProducts(resp.data.data);
+    } catch (error) {
+      console.log(error?.response?.data?.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchInitialData();
+  }, []);
 
   return (
     <>
@@ -42,97 +63,21 @@ const Shop = ({ products }) => {
           </Grid>
         </Grid>
         <Grid container spacing={2} style={{ justifyContent: "center" }}>
-          {products?.map((item, index) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-              <ProductCard key={index} product={item} />
-            </Grid>
-          ))}
+          {loading ? (
+            <Loader />
+          ) : products?.length > 0 ? (
+            products.map((item, index) => (
+              <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                <ProductCard key={index} product={item} />
+              </Grid>
+            ))
+          ) : (
+            <h2>No products</h2>
+          )}
         </Grid>
       </div>
     </>
   );
 };
 
-Shop.defaultProps = {
-  products: [
-    {
-      product_name: "Kintsugi",
-      quantity: 2,
-      product_price: 399,
-      product_images: [
-        {
-          img: "assets/images/test.jpg",
-        },
-        {
-          img: "assets/images/logo2.png",
-        },
-      ],
-    },
-    {
-      product_name: "Kintsugi",
-      quantity: 2,
-      product_price: 399,
-      product_images: [
-        {
-          img: "assets/images/logo1.png",
-        },
-        {
-          img: "assets/images/logo2.png",
-        },
-      ],
-    },
-    {
-      product_name: "Plate",
-      quantity: 3,
-      product_price: 499,
-      product_images: [
-        {
-          img: "assets/images/logo1.png",
-        },
-        {
-          img: "assets/images/logo2.png",
-        },
-      ],
-    },
-    {
-      product_name: "Kintsugi",
-      quantity: 2,
-      product_price: 399,
-      product_images: [
-        {
-          img: "assets/images/logo1.png",
-        },
-        {
-          img: "assets/images/logo2.png",
-        },
-      ],
-    },
-    {
-      product_name: "Kintsugi",
-      quantity: 2,
-      product_price: 399,
-      product_images: [
-        {
-          img: "assets/images/logo1.png",
-        },
-        {
-          img: "assets/images/logo2.png",
-        },
-      ],
-    },
-    {
-      product_name: "Kintsugi",
-      quantity: 2,
-      product_price: 399,
-      product_images: [
-        {
-          img: "assets/images/logo1.png",
-        },
-        {
-          img: "assets/images/logo2.png",
-        },
-      ],
-    },
-  ],
-};
 export default Shop;

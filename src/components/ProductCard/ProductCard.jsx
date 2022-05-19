@@ -55,7 +55,7 @@ function ProductCard({ product, isShowAddToCartBtn }) {
         >
           <Box className={classes.imgContainer}>
             <img
-              src={product.product_images[0].img}
+              src={product.product_images[0].image}
               className={classes.coverImg}
             />
           </Box>

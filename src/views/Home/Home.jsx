@@ -12,14 +12,17 @@ import { getAllProducts } from "../../utils/productsUtils";
 
 const Home = () => {
   const [products, setProducts] = useState(null);
+  const [loading, setLoading] = useState(null);
 
   const fetchInitialData = async () => {
+    setLoading(true);
     try {
       const resp = await getAllProducts();
-      debugger
       setProducts(resp.data.data);
     } catch (error) {
       console.log(error?.response?.data?.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -34,10 +37,10 @@ const Home = () => {
         subTitle={
           "Creating your luxury home will begin with us. Shop all modern and exclusive collection now."
         }
-        image={"assest/images/home-header-bg.jpg"}
+        image={"assets/images/bgImg.jpg"}
       />
 
-      <RecommendedItems products={products} />
+      <RecommendedItems products={products} loading={loading} />
       <Banner2
         title={"New Layers of Luxe"}
         subTitle={

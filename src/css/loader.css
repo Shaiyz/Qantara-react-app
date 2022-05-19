@@ -1,0 +1,30 @@
+.loader-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.loader {
+    border: 7px solid #939090;
+    border-radius: 50%;
+    border-top: 7px solid #1179be;
+    width: 20px;
+    height: 20px;
+    -webkit-animation: spin 1.5s linear infinite;
+    /* Safari */
+    animation: spin 1.5s linear infinite;
+    /* top: 50%; */
+    /* position: absolute; */
+    /* left: 45%; */
+
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
